@@ -173,12 +173,6 @@ def main():
         batch_size=configs["batch_size"],
         shuffle=True
     )
-    for batch in train_loader:
-        print(batch["source_seq"])
-        print(batch["target_seq"])
-        print(batch["source_ids"])
-        print(batch["target_ids"])
-        break
 
 
 
