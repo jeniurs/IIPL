@@ -11,7 +11,7 @@ from nltk.translate.bleu_score import corpus_bleu
 from nltk.translate.bleu_score import SmoothingFunction
 
 from model import Transformer
-from datasets_pretrained import configs
+from datasets import configs
 from train import read_data
 smoothie = SmoothingFunction()
 
