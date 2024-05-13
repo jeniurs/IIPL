@@ -5,6 +5,13 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 
+import matplotlib.pyplot as plt
+
+import torch
+from torch.utils.data import Dataset
+from transformers import AutoTokenizer
+import re
+
 configs = {
     "train_source_data":"/content/train.en",
     "train_target_data":"/content/train.de",
@@ -30,7 +37,6 @@ configs = {
     "early_stopping":5
 }
 
-import matplotlib.pyplot as plt
 
 # visualize log
 def plot_loss(log_path, log_dir):
@@ -58,10 +64,6 @@ def plot_loss(log_path, log_dir):
     plt.legend()
     plt.savefig(os.path.join(log_dir, "loss_batch.png"))
 
-import torch
-from torch.utils.data import Dataset
-from transformers import AutoTokenizer
-import re
 
 class TranslateDataset(Dataset):
     def __init__(self, source_tokenizer, target_tokenizer, source_data=None, target_data=None, source_max_seq_len=256, target_max_seq_len=256, phase="train"):
