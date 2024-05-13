@@ -8,7 +8,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import json
 import os
-from datasets_pretrained import configs,TranslateDataset, plot_loss
+from datasets import configs,TranslateDataset, plot_loss
 from model import Transformer
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
