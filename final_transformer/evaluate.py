@@ -5,15 +5,13 @@ import time
 import re
 import json
 from tqdm import tqdm
-import numpy as np
 from torchtext.data.metrics import bleu_score
 
-from nltk.translate.bleu_score import corpus_bleu
 
-from configs import configs
-from utils import en_tokenizer, de_tokenizer, de_id2token, read_data, pad_token_id, eos_token_id, sos_token_id, src_encode
-from model import Transformer
+from nltk.translate.bleu_score import corpus_bleu, sentence_bleu
 
+from nltk.translate.bleu_score import SmoothingFunction
+smoothie = SmoothingFunction()
 
 def tgt_decode(ids):
         sentence = list(map(lambda x: de_id2token[x], ids))[1:-1]
@@ -109,13 +107,14 @@ def translate(model, sentence, source_tokenizer, target_tokenizer, source_max_se
     target_tokens = completed[0][0]
     # Convert target sentence from tokens to string
     target_sentence = tgt_decode(target_tokens)
-    
+
     return target_sentence
 
 
 def preprocess_seq(seq):
         seq = re.sub(
-        r"[\*\"“”\n\\…\+\-\/\=\(\)‘•:\[\]\|’\!;]", " ", str(seq))
+        r"[\*\"“”\n\…\+\-\/\=‘•:
+\|’\!;]", " ", str(seq))
         seq = re.sub(r"[ ]+", " ", seq)
         seq = re.sub(r"\!+", "!", seq)
         seq = re.sub(r"\,+", ",", seq)
@@ -136,28 +135,17 @@ def calculate_bleu_score(model, source_tokenizer, target_tokenizer, configs):
       for en in pred_sents:
         source_before_padding=src_encode(en)
       source_after_padding=test_pad_features(pad_token_id,source_before_padding)
-     
+
       pred_trg = translate(model, source_after_padding, source_tokenizer, target_tokenizer, configs["source_max_seq_len"], configs["target_max_seq_len"], configs["beam_size"], device)
       hypotheses.append(pred_trg)
-    #print(hypotheses)
-      
-    references = [sent for sent in valid_trg_data]
-    #print(references)
-    # write prediction to file
-    #with open("logs/predict_valid.txt", "wb") as f:
-        #for sent in pred_sents:
-            #f.write(f"{sent}\n")
 
-    print(references[:6])
-    print(hypotheses[:6])
+    references=[[preprocess_seq(sent).split()] for sent in valid_trg_data]
+    hypothesis=[sent.split() for sent in hypotheses]
+    print(references)
+    print(hypothesis)
+    bleu_score=corpus_bleu(references, hypothesis, weights=(0.25,0.25,0.25,0.25))
+    print(bleu_score)
 
-    weights = [(1,0,0,0),(0.95,0.05,0,0),(0.8,0.15,0.05,0),(0.7,0.1,0.1,0.1)]
-    gram_1 = corpus_bleu(references, hypotheses, weights=weights[0])
-    gram_2 = corpus_bleu(references, hypotheses, weights=weights[1])
-    gram_3 = corpus_bleu(references, hypotheses, weights=weights[2])
-    gram_4 = corpus_bleu(references, hypotheses, weights=weights[3])
-    print(f"gram_1: {gram_1} | gram_2: {gram_2} | gram_3: {gram_3}| gram_4: {gram_4}")
-    return gram_1, gram_2, gram_3, gram_4
 
 
 def main():
